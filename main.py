@@ -346,19 +346,19 @@ async def on_reaction_add(reaction, user):
 
             if log_channel and isinstance(log_channel, discord.TextChannel):
                 await log_channel.send(
-                    f"📩 Bug synced to Jira: [{jira_issue['key']}]({JIRA_BASE_URL}/browse/{jira_issue['key']})\n"
+                    f"Bug synced to Jira: [{jira_issue['key']}]({JIRA_BASE_URL}/browse/{jira_issue['key']})\n"
                     f"Thread: https://discord.com/channels/{channel.guild.id}/{channel.id}"
                 )
         except Exception as e:
-            print(f"❌ Jira error: {e}")
-            await channel.send("⚠️ Failed to sync to Jira.")
+            print(f"Jira error: {e}")
+            await channel.send("Failed to sync to Jira.")
 
 
 
 async def format_thread_to_markdown(thread: discord.Thread, messages: list[discord.Message]) -> str:
     lines = [
         f"# {thread.name}",
-        f"🔗 https://discord.com/channels/{thread.guild.id}/{thread.parent_id}/threads/{thread.id}",
+        f"https://discord.com/channels/{thread.guild.id}/{thread.parent_id}/threads/{thread.id}",
         ""
     ]
     for msg in sorted(messages, key=lambda m: m.created_at):
@@ -461,7 +461,7 @@ async def upload_attachments_to_jira(issue_id: str, attachments: list[discord.At
                     headers=headers
                 ) as upload_resp:
                     if upload_resp.status != 200:
-                        print(f"❌ Failed to upload {attachment.filename}: {await upload_resp.text()}")
+                        print(f"Failed to upload {attachment.filename}: {await upload_resp.text()}")
 
 
 async def upload_attachments_to_jira(issue_id: str, attachments: list[discord.Attachment]):
@@ -486,7 +486,7 @@ async def upload_attachments_to_jira(issue_id: str, attachments: list[discord.At
                     headers=headers
                 ) as upload_resp:
                     if upload_resp.status != 200:
-                        print(f"❌ Failed to upload {attachment.filename}: {await upload_resp.text()}")
+                        print(f"Failed to upload {attachment.filename}: {await upload_resp.text()}")
 
 
 # Simulate your config functions
@@ -514,7 +514,7 @@ async def setup_bug_forum(interaction: discord.Interaction):
     forum_channels = [c for c in guild.channels if isinstance(c, discord.ForumChannel)]
 
     if not forum_channels:
-        await interaction.response.send_message("❌ No accessible forum channels found.", ephemeral=True)
+        await interaction.response.send_message("No accessible forum channels found.", ephemeral=True)
         return
 
     options_text = [discord.SelectOption(label=f"#{c.name}", value=str(c.id)) for c in text_channels[:25]]
@@ -534,18 +534,18 @@ async def setup_bug_forum(interaction: discord.Interaction):
         @discord.ui.select(placeholder="Select forum channel", options=options_forum, custom_id="forum")
         async def select_forum(self, interaction2: discord.Interaction, select: discord.ui.Select):
             set_guild_config(guild.id, {"forumChannelId": select.values[0]})
-            await interaction2.response.send_message(f"✅ Forum set to <#{select.values[0]}>", ephemeral=True)
+            await interaction2.response.send_message(f"Forum set to <#{select.values[0]}>", ephemeral=True)
 
         @discord.ui.select(placeholder="Select log channel", options=options_text, custom_id="log")
         async def select_log(self, interaction2: discord.Interaction, select: discord.ui.Select):
             set_guild_config(guild.id, {"logChannelId": select.values[0]})
-            await interaction2.response.send_message(f"✅ Log set to <#{select.values[0]}>", ephemeral=True)
+            await interaction2.response.send_message(f"Log set to <#{select.values[0]}>", ephemeral=True)
 
         if tag_options:
             @discord.ui.select(placeholder="Select required forum tag", options=tag_options, custom_id="tag")
             async def select_tag(self, interaction2: discord.Interaction, select: discord.ui.Select):
                 set_guild_config(guild.id, {"forumTagId": select.values[0]})
-                await interaction2.response.send_message(f"✅ Required tag set: `{select.values[0]}`", ephemeral=True)
+                await interaction2.response.send_message(f"Required tag set: `{select.values[0]}`", ephemeral=True)
 
     await interaction.response.send_message(
         "**Setup Bug Reporting**\nSelect forum, log channel, and required tag below:",
@@ -567,7 +567,7 @@ async def setup_jira_emoji(interaction: discord.Interaction, emoji: str):
     config[guild_id] = {**config.get(guild_id, {}), "jiraEmoji": emoji}
     with open("guild_config.json", "w") as f:
         json.dump(config, f, indent=2)
-    await interaction.response.send_message(f"✅ Jira sync emoji set to: {emoji}", ephemeral=True)
+    await interaction.response.send_message(f"Jira sync emoji set to: {emoji}", ephemeral=True)
 
 async def create_jira_issue_from_thread(thread: discord.Thread, messages: list[discord.Message]) -> dict:
     jira_base_url = JIRA_BASE_URL
@@ -657,10 +657,10 @@ async def end_tournament(interaction: discord.Interaction, name: str = "Unnamed 
     log_channel = interaction.guild.get_channel(int(log_channel_id)) if log_channel_id else None
 
     if not isinstance(forum, discord.ForumChannel):
-        await interaction.response.send_message("⚠️ Invalid or missing forum channel.", ephemeral=True)
+        await interaction.response.send_message("Invalid or missing forum channel.", ephemeral=True)
         return
     if not isinstance(log_channel, discord.TextChannel):
-        await interaction.response.send_message("⚠️ Invalid or missing log channel.", ephemeral=True)
+        await interaction.response.send_message("Invalid or missing log channel.", ephemeral=True)
         return
 
     await interaction.response.defer(ephemeral=True)
@@ -692,7 +692,7 @@ async def end_tournament(interaction: discord.Interaction, name: str = "Unnamed 
         file=discord.File(zip_buffer, filename=f"{name.replace(' ', '_')}.zip")
     )
 
-    await interaction.edit_original_response(content="✅ Tournament export sent.")
+    await interaction.edit_original_response(content="Tournament export sent.")
     
 @tree.command(name="mass_sync_jira", description="Mass sync bug threads to Jira")
 @app_commands.describe(since="Optional ISO timestamp to override last sync time")
@@ -717,10 +717,10 @@ async def mass_sync_jira(interaction: discord.Interaction, since: str = None):
     log_channel = interaction.guild.get_channel(int(log_channel_id)) if log_channel_id else None
 
     if not isinstance(forum, discord.ForumChannel):
-        await interaction.response.send_message("⚠️ Invalid or missing forum channel.", ephemeral=True)
+        await interaction.response.send_message("Invalid or missing forum channel.", ephemeral=True)
         return
     if not isinstance(log_channel, discord.TextChannel):
-        await interaction.response.send_message("⚠️ Invalid or missing log channel.", ephemeral=True)
+        await interaction.response.send_message("Invalid or missing log channel.", ephemeral=True)
         return
 
     await interaction.response.defer(ephemeral=True)
@@ -741,10 +741,10 @@ async def mass_sync_jira(interaction: discord.Interaction, since: str = None):
             messages = await fetch_thread_messages(thread)
             jira_issue = await create_jira_issue_from_thread(thread, messages)
             await upload_attachments_to_jira(jira_issue["id"], [att for msg in messages for att in msg.attachments])
-            results.append(f"✅ [{jira_issue['key']}]({JIRA_BASE_URL}/browse/{jira_issue['key']}) - {thread.name}")
+            results.append(f"[{jira_issue['key']}]({JIRA_BASE_URL}/browse/{jira_issue['key']}) - {thread.name}")
         except Exception as e:
-            print(f"❌ Jira sync failed for {thread.name}: {e}")
-            results.append(f"❌ {thread.name}: Failed to sync")
+            print(f"Jira sync failed for {thread.name}: {e}")
+            results.append(f"{thread.name}: Failed to sync")
 
     set_guild_config(interaction.guild_id, {**config, "lastJiraMassSync": now.isoformat()})
 
@@ -762,7 +762,7 @@ async def mass_sync_jira(interaction: discord.Interaction, since: str = None):
     for chunk in chunks:
         await log_channel.send(chunk)
 
-    await interaction.edit_original_response(content="✅ Mass Jira sync completed.")
+    await interaction.edit_original_response(content="Mass Jira sync completed.")
 
 @bot.event
 async def on_ready():
